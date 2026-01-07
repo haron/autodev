@@ -79,5 +79,5 @@ runcmd:
       ufw allow in  proto udp to any port 41641
       ufw allow out proto udp to any port 41641
 
-      tailscale up --auth-key=${TS_AUTH_KEY}
+      tailscale up --auth-key=TS_AUTH_KEY
     '

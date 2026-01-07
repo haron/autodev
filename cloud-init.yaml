@@ -34,7 +34,7 @@ packages:
   - ufw
 
 write_files:
-  - path: /etc/sysctl.d/99-tailscale.conf 
+  - path: /etc/sysctl.d/99-tailscale.conf
     content: |
       net.ipv4.ip_forward = 1
       net.ipv6.conf.all.forwarding = 1'
@@ -46,7 +46,7 @@ write_files:
           tmux attach -t main 2>/dev/null || tmux new -s main
       fi
       [[ -f ~/.bashrc ]] && source ~/.bashrc
-  
+
   - path: /home/dev/.claude/settings.json
     owner: dev:dev
     content: |

@@ -1,21 +1,5 @@
 # autodev
 
-Personal environment for agent-assisted development using throwaway virtual machine.
-
-## Tools
-
-`hetzner.py` CLI tool and a library to create and destroy VM on Hetzner. It uses Hetzner API, it creates a VM according to the specs below. It uses ConfigArgParse library for configuration.
-
-Commands:
-
-* create
-* destroy
-* cleanup
-
- Cleanup command destroys all the VMs ruining longer than 24 hours (configurable).
-
-# autodev
-
 Personal environment for agent-assisted development using a throwaway virtual machine.
 
 ## Tools
@@ -40,14 +24,19 @@ Cleanup cron task runs daily at 02:00 UTC, stdout and stderr go to syslog via `.
 
 ### Telegram
 
-`telegram.py` notifies me about the events requring my attention. It uses `python-telegram-bot` library and the configuration method described above. When running whithout dash-optins, it sends me (chat ID is configurable) a Telegram message consisting of all its arguments.
+`telegram.py` notifies me about the events requiring my attention. It uses `python-telegram-bot` library and the configuration method described above. When running without dash-options, it sends me (chat ID is configurable) a Telegram message consisting of all its arguments.
 
-### Provisioning
+## Provisioning
 
-`provision.yaml` is an Ansible single-file playbook, that logs in to the server as root, creates `autodev` user (username is configurable via Ansible variables), sets `bash` as user shell, installs cleanup cron task (cron shell should be Bash).
+`provision.yaml` is an Ansible single-file playbook, that:
+  - logs in to the server as root
+  - creates `autodev` user (username is configurable via Ansible variables),
+  - sets `/bin/bash` as user shell and cron shell,
+  - installs cleanup cron task
+  - install `claude_settings.json` to `~/.claude/settings.json`
 
 ```bash
-./provision.yaml -i host.name,
+./provision.yaml -i host.name
 ```
 
 ## Programming style

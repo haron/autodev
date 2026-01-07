@@ -5,7 +5,7 @@ users:
     shell: /bin/bash
     sudo: "ALL=(ALL) NOPASSWD:ALL"
     ssh_authorized_keys:
-      - https://github.com/haron.keys
+      - SSH_KEYS_URL
 
 package_update: true
 package_upgrade: false

@@ -33,9 +33,16 @@ packages:
   - unzip
 
 write_files:
+  - path: /home/dev/.bash_profile
+    owner: dev:dev
+    content: |
+      if [[ -z "$TMUX" ]]; then
+          tmux attach -t main 2>/dev/null || tmux new -s main
+      fi
+      [[ -f ~/.bashrc ]] && source ~/.bashrc
+  
   - path: /home/dev/.claude/settings.json
     owner: dev:dev
-    permissions: '0644'
     content: |
       {
         "hooks": {

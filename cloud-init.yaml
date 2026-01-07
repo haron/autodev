@@ -1,0 +1,41 @@
+#cloud-config
+users:
+  - name: dev
+    groups: [sudo]
+    shell: /bin/bash
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+FZhmQFuELSMxK5ZMwUYiXsE5mpeYzHgwwe+SBEtpSKQWDE8UDKlA2uzH8Re1jVH5s66PlbmpgkU4x0qVLo/gfQbo5dkAqIuDIL/4B6zjdOZ4O7yCT1FNgKAqCV9WLz42RtO4wpAitZnT9rD/0oMyRIpCxUzY0X9oJEU1s8kZWmiwuJHq4OX2tNlxNPQQReb7KHyJg1ajOGmOuFsUQ/87bj1eX4v2epE2khcR7j6a/RVVcXpJLk80QatMatxA05lMtQ4Yu/ex/xQdVtkAzl6ggFLKYjQ/CqEXt550hPEVJEbR9YBNF+LADAk5cBteomOwnRDCCT+lTrupH2V8B2YB
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDHjEW3BXwnQhhKy//qk37RbGtxFWxrwy3l1Rj5HMulfOzy9HWZHwUnFWGRzrMi3lpWgKvyP2OVL/t7fUqLs9SlGPG6jSg6g++ph6Cu7Wx9eVnta8MJByuqPH+ETxHX1p2ILILoiKepgp2omWMrnDvE80qrl02p8d5/kcfKZZNdjAFyB7dDRPtV9WwA8ab/3emszbLBqbOb9LDJOu4v71g7AVJ5fdYDivl0i8qsBr32/B3D3Thoayvf5tjZk/VCoO2rxOvL1GB20kH+B+lsm7i3sZjACR/sKGQ133Ck2lGWBzLBB9dIR2zQhUWmWN0xw7NtQ/rYrll706syWdKm+bkECh8wGneohHlG0FJAbr2qxP12kBnOwxm0SeZD8sdByvwxCfed1SYpc6AKtpr8VekBTVVE2mYyhmsMM4sVIAB8GdC8Vdc4/JTi6TdLSjC6lxywS30F8C5K0iSbGaik8lef8LqS9ERE69jsVMik+2Gyn+5o2/xyZCXqVYXL9Y4S1Ic=
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICb3cVbsop4yFNKq+O1Ruturoq0Te6HIMtM4eKFH0Jh6
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDf/rv5WYIY+UI9AFSwZe2e0R9yagUHx5qj55r9v+a1Vop6DgxlNa54UY7b7qatJEjEmOFdjVjaR8lDK1uMlXSbIma07rc+oiRUBsLlew2vk+LWtg4ScCYLE9jxT3yrV5Cqm6RFKbK6uoSIs49La+UGT1tcd8Q4rsvd1dEsem/e0S/kmpKtDGUpv187RHUUGzOy06lNO8A4CyL6Ov29XMzxt7NjEH1al1V9Fxr4nA50aJlidVoyWeFEr/XZEWKlhxfLzCF9TGDVkcRQecJYsrHwmajMLj7p/9b7lJAXkoPMbvkpiMHnZxBM/HM/5TSiBHdiE3dhpccNRjhORBe4Btr7fUIa5RcWt6dt15O7/BBIzZA0jp4xv0s1Xqdfv0Skz5obt8NRCwkoWflw0W7LBjWrN+RukA8ictRmoKKLb/KEMFv+hpS6p9C+u5LOeddJzGKMUerAV255i+yIFhJZp6ISkJsMDI8m0OYQNLgmZ1BecSHfXhG5Uf3HFJRkbcFxUMM=
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG1J9U1F5C4/uLYdpq/f7LgNGbGx0JWwPs5Iolr6b1Z2
+
+package_update: true
+package_upgrade: false
+
+packages:
+  - git
+  - tailscale
+  - ripgrep
+  - mosh
+  - curl
+  - moreutils
+  - python3
+  - tmux
+  - htop
+  - vim
+  - neovim
+  - lua-check
+  - stow
+  - fzf
+  - fd-find
+  - gh
+  - pdsh
+  - ansible
+  - bat
+  - unzip
+
+runcmd:
+  - [ sh, -c, "curl -LsSf https://astral.sh/uv/install.sh | sh" ]
+  - [ sh, -c, "curl -fsSL https://claude.ai/install.sh | bash" ]

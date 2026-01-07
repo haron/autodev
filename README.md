@@ -1,56 +1,113 @@
 # autodev
 
-Personal environment for agent-assisted development using a throwaway virtual machine.
+Personal environment for agent-assisted development using throwaway virtual machines on Hetzner Cloud.
 
-## Tools
+## Quick Start
 
-### Hetzner
+1. Install dependencies:
+   ```bash
+   uv sync
+   ```
 
-`hetzner.py` is a CLI tool and a Python library to create and destroy VMs on Hetzner Cloud. It uses the Hetzner Cloud API to operate VMs, ConfigArgParse, python-dotenv and python-decouple libraries for configuration. All the default settings are in `settings.py`.
+2. Create `.env` file:
+   ```bash
+   HETZNER_TOKEN=your-api-token-here
+   AUTODEV_PROJECT_NAME=your-project-name
+   AUTODEV_SSH_KEYS_URL=https://github.com/haron.keys
+   TELEGRAM_BOT_TOKEN=your-bot-token
+   TELEGRAM_CHAT_ID=your-chat-id
+   ```
 
-Configuration is loaded from a project-local `.env` file that contains environment variables required by the tool. This lets me keep credentials and per-project settings outside of the code, but still colocated with the project.
+3. Create a VM:
+   ```bash
+   ./hetzner.py create
+   ```
 
-When creating a new VM, `hetzner.py` initializes it via `cloud-init` by passing a user data script to the Hetzner Cloud API so the machine comes up preconfigured for agent-assisted development.
+4. Provision the VM:
+   ```bash
+   ./provision.yaml -i <vm-ip-or-hostname>
+   ```
 
-By default, the VM is created in Hetzner’s Finland data center, instance type CX23 with IPv4 networking (configurable).
+## Usage
 
-Commands:
+### Creating VMs
 
-* `create` – create a VM with the above specs and run the configured cloud-init.
-* `destroy` – destroy a given VM.
-* `cleanup` – destroy all VMs that have been running for longer than 24 hours (configurable).
-
-Cleanup cron task runs daily at 02:00 UTC, stdout and stderr go to syslog via `... |& logger -t autodev`.
-
-### Telegram
-
-`telegram.py` notifies me about the events requiring my attention. It uses `python-telegram-bot` library and the configuration method described above. When running without dash-options, it sends me (chat ID is configurable) a Telegram message consisting of all its arguments.
-
-## Provisioning
-
-`provision.yaml` is an Ansible single-file playbook, that:
-  - logs in to the server as root
-  - creates `autodev` user (username is configurable via Ansible variables),
-  - sets `/bin/bash` as user shell and cron shell,
-  - installs cleanup cron task
-  - install `claude_settings.json` to `~/.claude/settings.json`
-
+Create a new VM with default settings:
 ```bash
-./provision.yaml -i host.name
+./hetzner.py create
 ```
 
-## Programming style
-
-Don't be defensive, fail fast. It's much better to just show me an exception, than trying to handle all the possible errors. Keep the code concise, with minimal comments.
-
-## Environment configuration
-
-The tool reads configuration from a `.env` file in the project directory and exports those values into the environment before running.
-
-Example:
-
+Customize VM creation:
 ```bash
-HETZNER_TOKEN=your-api-token-here
-AUTODEV_PROJECT_NAME=your-project-name
-AUTODEV_SSH_PUBLIC_KEY=~/.ssh/id_ed25519.pub
+./hetzner.py create --location hel1 --instance-type cx23 --network-type ipv4
 ```
+
+The VM will be automatically configured via cloud-init with:
+- SSH keys from the configured URL
+- Development tools (git, tailscale, ripgrep, mosh, tmux, vim, neovim, etc.)
+- Python 3 and UV
+- Claude CLI
+
+### Managing VMs
+
+Destroy a specific VM:
+```bash
+./hetzner.py destroy <vm-name>
+```
+
+Cleanup old VMs (default: older than 24 hours):
+```bash
+./hetzner.py cleanup --hours 24
+```
+
+### Telegram Notifications
+
+Send a simple message:
+```bash
+./telegram.py Your message here
+```
+
+With options:
+```bash
+./telegram.py --chat-id <chat-id> Your message here
+```
+
+### Provisioning
+
+After creating a VM, provision it with Ansible:
+```bash
+./provision.yaml -i <vm-ip-or-hostname>
+```
+
+This will:
+- Create the `autodev` user
+- Set bash as the shell
+- Install the cleanup cron task
+
+## Configuration
+
+All configuration is done via environment variables in `.env`:
+
+- `HETZNER_TOKEN` - Hetzner Cloud API token (required)
+- `AUTODEV_PROJECT_NAME` - Project name prefix for VMs (default: "autodev")
+- `AUTODEV_SSH_KEYS_URL` - URL to fetch SSH public keys from (default: https://github.com/haron.keys)
+- `TELEGRAM_BOT_TOKEN` - Telegram bot token (required for telegram.py)
+- `TELEGRAM_CHAT_ID` - Telegram chat ID (required for telegram.py)
+
+Default VM settings can be changed in `settings.py`:
+- `LOCATION` - Hetzner data center (default: "hel1")
+- `INSTANCE_TYPE` - VM instance type (default: "cx23")
+- `NETWORK_TYPE` - Network type (default: "ipv4")
+- `CLEANUP_HOURS` - Hours before cleanup (default: 24)
+- `SSH_KEYS_URL` - Default SSH keys URL
+
+## Workflow
+
+1. Create a VM: `./hetzner.py create`
+2. Note the IP address from the output
+3. Provision: `./provision.yaml -i <ip>`
+4. SSH into the VM: `ssh dev@<ip>`
+5. Work on your project
+6. Destroy when done: `./hetzner.py destroy <vm-name>`
+
+Old VMs are automatically cleaned up daily at 02:00 UTC via cron.

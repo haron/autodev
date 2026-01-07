@@ -1,0 +1,34 @@
+#!/usr/bin/env ansible-playbook
+- name: Install Python
+  hosts: all
+  gather_facts: false
+  strategy: free
+  tasks:
+    - name: Install Python3
+      raw: which python3 || ( apt-get -qq update; apt-get -y install python3 )
+- name: Provision the server
+  hosts: all
+  become: yes
+  vars:
+    autodev_user: "autodev"
+  tasks:
+    - name: Create autodev user
+      user:
+        name: "{{ autodev_user }}"
+        shell: /bin/bash
+        create_home: yes
+
+    - name: Set cron shell to bash
+      lineinfile:
+        path: /etc/default/cron
+        regexp: "^SHELL="
+        line: "SHELL=/bin/bash"
+        create: yes
+
+    - name: Install cleanup cron task
+      cron:
+        name: "autodev cleanup"
+        user: "{{ autodev_user }}"
+        minute: "0"
+        hour: "2"
+        job: "cd ~ && ./hetzner.py cleanup |& logger -t autodev"

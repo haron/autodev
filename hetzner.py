@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run -q
 import argparse
 import os
 import sys
@@ -7,6 +7,7 @@ from pathlib import Path
 from urllib.request import urlopen
 
 import configargparse
+import yaml
 from decouple import config
 from dotenv import load_dotenv
 from hcloud import Client
@@ -22,7 +23,8 @@ load_dotenv()
 HETZNER_TOKEN = config("HETZNER_TOKEN")
 PROJECT_NAME = config("AUTODEV_PROJECT_NAME", default="autodev")
 SSH_KEYS_URL = config("AUTODEV_SSH_KEYS_URL", default=settings.SSH_KEYS_URL)
-
+TS_AUTH_KEY = config("TS_AUTH_KEY")
+OS_IMAGE = config("OS_IMAGE", default="ubuntu-24.04")
 
 def get_client():
     return Client(token=HETZNER_TOKEN)
@@ -34,24 +36,32 @@ def read_cloud_init():
 
 
 def fetch_ssh_keys(url):
-    with urlopen(url) as response:
-        keys = response.read().decode("utf-8").strip()
-    return [key.strip() for key in keys.split("\n") if key.strip()]
+    data = urlopen(url).read().decode("utf-8")
+    keys = [line.strip() for line in data.splitlines() if line.strip() and not line.strip().startswith("#")]
+    if not keys:
+        raise ValueError("No SSH public keys found at AUTODEV_SSH_KEYS_URL")
+    return keys
 
 
 def create_vm(args):
     client = get_client()
     cloud_init = read_cloud_init()
-    ssh_keys = fetch_ssh_keys(SSH_KEYS_URL)
 
     location = Location(name=args.location)
     server_type = ServerType(name=args.instance_type)
-    image = Image(name="ubuntu-24.04")
+    image = Image(name=OS_IMAGE)
 
-    keys_yaml = "\n".join(f"      - {key}" for key in ssh_keys)
-    user_data = cloud_init.replace(
-        f"      - {settings.SSH_KEYS_URL}", keys_yaml
-    )
+    data = yaml.safe_load(cloud_init)
+    keys = fetch_ssh_keys(SSH_KEYS_URL)
+    users = data.get("users", [])
+    for user in users:
+        user["ssh_authorized_keys"] = keys
+
+    # Dump back to YAML and keep cloud-config header
+    dumped = yaml.safe_dump(data, sort_keys=False)
+    user_data = "#cloud-config\n" + dumped
+    user_data = user_data.replace("TS_AUTH_KEY", TS_AUTH_KEY)
+    print(user_data)
 
     response = client.servers.create(
         name=f"{PROJECT_NAME}-{datetime.now().strftime('%Y%m%d-%H%M%S')}",
@@ -100,10 +110,7 @@ def cleanup_vms(args):
 
 
 def main():
-    parser = configargparse.ArgumentParser(
-        default_config_files=[".env"],
-        config_file_parser_class=configargparse.YAMLConfigFileParser,
-    )
+    parser = configargparse.ArgumentParser()
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 

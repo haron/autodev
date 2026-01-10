@@ -4,15 +4,12 @@ users:
     groups: [sudo]
     shell: /bin/bash
     sudo: "ALL=(ALL) NOPASSWD:ALL"
-    ssh_authorized_keys:
-      - SSH_KEYS_URL
 
 package_update: true
 package_upgrade: false
 
 packages:
   - git
-  - tailscale
   - ripgrep
   - mosh
   - curl
@@ -37,7 +34,7 @@ write_files:
   - path: /etc/sysctl.d/99-tailscale.conf
     content: |
       net.ipv4.ip_forward = 1
-      net.ipv6.conf.all.forwarding = 1'
+      net.ipv6.conf.all.forwarding = 1
 
   - path: /home/dev/.bash_profile
     owner: dev:dev
@@ -79,5 +76,5 @@ runcmd:
       ufw allow in  proto udp to any port 41641
       ufw allow out proto udp to any port 41641
 
-      tailscale up --auth-key=TS_AUTH_KEY
+      tailscale up --hostname=autodev --auth-key=TS_AUTH_KEY
     '

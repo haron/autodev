@@ -2,6 +2,9 @@
 
 Personal environment for agent-assisted development using throwaway virtual machines on Hetzner Cloud.
 
+Get Tailscale API key at <https://login.tailscale.com/admin/settings/keys>, section "Auth keys" (reusable,
+ephemeral, pre-approved).
+
 ## Quick Start
 
 1. Install dependencies:
